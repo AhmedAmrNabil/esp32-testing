@@ -2,89 +2,132 @@
 #include <ESP32Encoder.h>
 #include <BleKeyboard.h>
 
-#define CLK 18           // CLK ENCODER
-#define DT 19            // DT ENCODER
-#define SW 21            // SW ENCODER
-#define FN_TOUCH_PIN 15  // Touch pin = GPIO 15
+// ====== Pin Definitions ======
+#define PIN_CLK 18
+#define PIN_DT 19
+#define PIN_BUTTON 21
+#define PIN_TOUCH_FN 15
 
+// ====== Debounce Settings ======
+const unsigned long debounceDelay = 50;
+
+// ====== Loop Timing ======
+const unsigned long loopInterval = 10;
+
+// ====== Touch Settings ======
+const int touchThreshold = 30;
+
+// ====== Globals ======
 ESP32Encoder encoder;
 BleKeyboard bleKeyboard("ESP32 Knob");
 
-long lastPosition = 0;
+volatile bool touchTriggered = false;
+long lastEncoderPosition = 0;
 bool lastButtonState = HIGH;
-bool buttonState = HIGH;
+bool currentButtonState = HIGH;
 unsigned long lastDebounceTime = 0;
-const unsigned long debounceDelay = 50;  // milliseconds
 unsigned long lastLoopTime = 0;
-const unsigned long loopInterval = 10;
 
-volatile int touchState = false;
+// ====== Function Declarations ======
+void setupEncoder();
+void setupButton();
+void setupTouch();
+void setupBleKeyboard();
 
-// Touch threshold (adjust after testing)
-const int touchThreshold = 30;
+void handleEncoder();
+void handleButton();
+bool isTouchActive();
+void IRAM_ATTR onTouchInterrupt();
 
-void onFnTouch() {
-    touchState = true;
-}
-
+// ====== Setup ======
 void setup() {
     delay(1000);
     Serial.begin(115200);
 
-    // Init encoder
-    encoder.attachHalfQuad(DT, CLK);
-    encoder.setCount(0);
-    encoder.setFilter(1023);
-
-    pinMode(SW, INPUT_PULLUP);
-
-    touchAttachInterrupt(FN_TOUCH_PIN, onFnTouch, touchThreshold);
-    // Start BLE Keyboard
-    bleKeyboard.begin();
+    setupEncoder();
+    setupButton();
+    setupTouch();
+    setupBleKeyboard();
 }
 
+// ====== Main Loop ======
 void loop() {
-    // Read and print touch value
-    unsigned long now = millis();
-    if (now - lastLoopTime < loopInterval) return;
-    lastLoopTime = now;
+    if (millis() - lastLoopTime < loopInterval) return;
+    lastLoopTime = millis();
 
     if (!bleKeyboard.isConnected()) return;
 
-    long newPosition = encoder.getCount();
-    bool fnState = touchState;
-    if (touchState) touchState = false;
+    handleEncoder();
+    handleButton();
+}
 
-    if (newPosition != lastPosition) {
-        if (newPosition > lastPosition) {
-            if (fnState)
-                bleKeyboard.write(KEY_MEDIA_NEXT_TRACK);
-            else
-                bleKeyboard.write(KEY_MEDIA_VOLUME_UP);
-        } else {
-            if (fnState)
-                bleKeyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
-            else
-                bleKeyboard.write(KEY_MEDIA_VOLUME_DOWN);
-        }
-        lastPosition = newPosition;
+// ====== Setup Components ======
+void setupEncoder() {
+    encoder.attachHalfQuad(PIN_DT, PIN_CLK);
+    encoder.setCount(0);
+    encoder.setFilter(1023);
+}
+
+void setupButton() {
+    pinMode(PIN_BUTTON, INPUT_PULLUP);
+}
+
+void setupTouch() {
+    touchAttachInterrupt(PIN_TOUCH_FN, onTouchInterrupt, touchThreshold);
+}
+
+void setupBleKeyboard() {
+    bleKeyboard.begin();
+}
+
+// ====== Handle Touch ======
+bool isTouchActive() {
+    if (touchTriggered) {
+        touchTriggered = false;
+        return true;
+    }
+    return false;
+}
+
+void IRAM_ATTR onTouchInterrupt() {
+    touchTriggered = true;
+}
+
+// ====== Handle Encoder Movement ======
+void handleEncoder() {
+    long newPos = encoder.getCount();
+    if (newPos == lastEncoderPosition) return;
+
+    bool fnPressed = isTouchActive();
+
+    if (newPos > lastEncoderPosition) {
+        bleKeyboard.write(fnPressed ? KEY_MEDIA_NEXT_TRACK : KEY_MEDIA_VOLUME_UP);
+    } else {
+        bleKeyboard.write(fnPressed ? KEY_MEDIA_PREVIOUS_TRACK : KEY_MEDIA_VOLUME_DOWN);
     }
 
-    int reading = digitalRead(SW);
+    lastEncoderPosition = newPos;
+}
+
+// ====== Handle Button Press ======
+void handleButton() {
+    int reading = digitalRead(PIN_BUTTON);
+
     if (reading != lastButtonState) {
         lastDebounceTime = millis();
     }
-    lastButtonState = reading;
 
     if ((millis() - lastDebounceTime) > debounceDelay) {
-        if (reading != buttonState) {
-            buttonState = reading;
-            if (buttonState == HIGH) {
-                if (fnState)
-                    bleKeyboard.write(KEY_MEDIA_PLAY_PAUSE);
-                else
-                    bleKeyboard.write(KEY_MEDIA_MUTE);
+        if (reading != currentButtonState) {
+            currentButtonState = reading;
+
+            // Button was released
+            if (currentButtonState == HIGH) {
+                bool fnPressed = isTouchActive();
+                bleKeyboard.write(fnPressed ? KEY_MEDIA_PLAY_PAUSE : KEY_MEDIA_MUTE);
             }
         }
     }
+
+    lastButtonState = reading;
 }
