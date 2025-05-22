@@ -15,11 +15,13 @@ bool lastButtonState = HIGH;
 bool buttonState = HIGH;
 unsigned long lastDebounceTime = 0;
 const unsigned long debounceDelay = 50;  // milliseconds
+unsigned long lastLoopTime = 0;
+const unsigned long loopInterval = 10;
 
 volatile int touchState = false;
 
 // Touch threshold (adjust after testing)
-const int touchThreshold = 20;
+const int touchThreshold = 30;
 
 void onFnTouch() {
     touchState = true;
@@ -43,46 +45,46 @@ void setup() {
 
 void loop() {
     // Read and print touch value
+    unsigned long now = millis();
+    if (now - lastLoopTime < loopInterval) return;
+    lastLoopTime = now;
 
-    if (bleKeyboard.isConnected()) {
-        long newPosition = encoder.getCount();
-        bool fnState = touchState;
+    if (!bleKeyboard.isConnected()) return;
 
-        if (newPosition != lastPosition) {
-            if (newPosition > lastPosition) {
-                if (fnState)
-                    bleKeyboard.write(KEY_MEDIA_NEXT_TRACK);
-                else
-                    bleKeyboard.write(KEY_MEDIA_VOLUME_UP);
-            } else {
-                if (fnState)
-                    bleKeyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
-                else
-                    bleKeyboard.write(KEY_MEDIA_VOLUME_DOWN);
-            }
-            lastPosition = newPosition;
+    long newPosition = encoder.getCount();
+    bool fnState = touchState;
+    if (touchState) touchState = false;
+
+    if (newPosition != lastPosition) {
+        if (newPosition > lastPosition) {
+            if (fnState)
+                bleKeyboard.write(KEY_MEDIA_NEXT_TRACK);
+            else
+                bleKeyboard.write(KEY_MEDIA_VOLUME_UP);
+        } else {
+            if (fnState)
+                bleKeyboard.write(KEY_MEDIA_PREVIOUS_TRACK);
+            else
+                bleKeyboard.write(KEY_MEDIA_VOLUME_DOWN);
         }
-
-        int reading = digitalRead(SW);
-        if (reading != lastButtonState) {
-            lastDebounceTime = millis();
-        }
-
-        if ((millis() - lastDebounceTime) > debounceDelay) {
-            if (reading != buttonState) {
-                buttonState = reading;
-                if (buttonState == HIGH) {
-                    if (fnState)
-                        bleKeyboard.write(KEY_MEDIA_PLAY_PAUSE);
-                    else
-                        bleKeyboard.write(KEY_MEDIA_MUTE);
-                }
-            }
-        }
-
-        lastButtonState = reading;
-        if (touchState) touchState = false;
+        lastPosition = newPosition;
     }
 
-    delay(10);  // Slower for easier serial reading
+    int reading = digitalRead(SW);
+    if (reading != lastButtonState) {
+        lastDebounceTime = millis();
+    }
+    lastButtonState = reading;
+
+    if ((millis() - lastDebounceTime) > debounceDelay) {
+        if (reading != buttonState) {
+            buttonState = reading;
+            if (buttonState == HIGH) {
+                if (fnState)
+                    bleKeyboard.write(KEY_MEDIA_PLAY_PAUSE);
+                else
+                    bleKeyboard.write(KEY_MEDIA_MUTE);
+            }
+        }
+    }
 }
