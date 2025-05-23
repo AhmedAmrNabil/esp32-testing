@@ -42,6 +42,13 @@ void setup(void) {
 void loop() {
     // volume_loud
     vol = encoder.getCount();
+    if (vol < 0) {
+        encoder.setCount(0);
+        vol = 0;
+    } else if (vol > 100) {
+        encoder.setCount(100);
+        vol = 100;
+    }
     if (vol != oldVol) {
         oldVol = vol;
         drawVolume();
