@@ -40,7 +40,7 @@ const unsigned long displayOffTimeLimit = 30 * 60000;  // 30 minutes in millisec
 
 unsigned long idleStartTime = 0;  // Track when IDLE mode starts
 bool displayOff = false;          // Track if the display is off
-
+unsigned long currentMillis;
 ESP32Encoder encoder;
 int oldCount = 0;
 
@@ -54,7 +54,7 @@ void setup() {
 
 //=========================================================
 void loop() {
-    unsigned long currentMillis = millis();
+    currentMillis = millis();
 
     // Handle rotary encoder input
     handleRotaryInput();
@@ -278,7 +278,8 @@ void handleCounting(unsigned long currentMillis) {
 //=========================================================
 // Success animation when a session ends
 void successAnimation() {
-    // display.clearDisplay();
+    // display.clearDisplay()
+    idleStartTime = currentMillis;
     sprite.fillSprite(TFT_BLACK);
     int centerX = tft.width() / 2, centerY = tft.height() / 2;
 
@@ -289,7 +290,7 @@ void successAnimation() {
 
         if (radius % 4 == 0) {
             sprite.fillSprite(TFT_BLACK);
-            sprite.pushSprite(0,0);
+            sprite.pushSprite(0, 0);
             delay(2);
         }
     }
