@@ -3,6 +3,7 @@
 #include "pins.h"
 
 TFT_eSPI tft = TFT_eSPI();
+TFT_eSprite sprite = TFT_eSprite(&tft);  // Create sprite linked to tft
 
 #define SW TX2
 #define CLK D4
@@ -103,24 +104,27 @@ void updateDisplay() {
         topRowText = "Flow: " + String(flowMinutes);  // Display total flow minutes when not counting
     }
 
-    int topRowTextWidth = topRowText.length() * 12;  // TextSize 2, so 12 pixels per char
-    int topRowX = (128 - topRowTextWidth) / 2;       // Center the text on the top row
-
-    tft.setTextSize(2);         // Larger size for top row
-    tft.setCursor(topRowX, 0);  // Centered on top row
+    tft.setTextSize(3);  // Larger size for top row
+    tft.setTextDatum(TC_DATUM);
     tft.setTextColor(TFT_YELLOW);
-    tft.print(topRowText);
-	tft.setTextColor(TFT_CYAN);
+    tft.drawString(topRowText, tft.width() / 2, tft.fontHeight() / 2);
 
     // Display main row (menu or counting values)
     String mainRowText;
+    char time[10];
 
     if (currentState == MENU) {
         mainRowText = menuOptions[menuIndex];  // Display UP, DOWN, or Reset in the menu
     } else if (currentState == COUNTING_UP) {
-        mainRowText = String(elapsedMinutes);  // Display counting up minutes
+        int seconds = elapsedMinutes % 60;
+        int mins = elapsedMinutes / 60;
+        snprintf(time, sizeof(time), "%02d:%02d", mins, seconds);
+        mainRowText = String(time);  // Display counting up minutes
     } else if (currentState == COUNTING_DOWN || currentState == SELECTING_DOWN_DURATION) {
-        mainRowText = String(countdownValue);  // Display countdown minutes
+        int seconds = countdownValue % 60;
+        int mins = countdownValue / 60;
+        snprintf(time, sizeof(time), "%02d:%02d", mins, seconds);
+        mainRowText = String(time);
     } else if (currentState == IDLE) {
         mainRowText = "IDLE?";
     }
@@ -128,9 +132,10 @@ void updateDisplay() {
     int mainRowTextWidth = mainRowText.length() * 24;  // TextSize 4, so 24 pixels per char
     int mainRowX = (128 - mainRowTextWidth) / 2;       // Calculate centered X position
 
-    tft.setTextSize(4);           // Larger size for main row
-    tft.setCursor(mainRowX, 30);  // Centered on main row
-    tft.print(mainRowText);
+    tft.setTextSize(5);
+    tft.setTextDatum(TC_DATUM);
+    tft.setTextColor(TFT_CYAN);
+    tft.drawString(mainRowText, tft.width() / 2, tft.fontHeight() * 1.6);
 
     // display.display();  // Show the updated display
 }
@@ -191,7 +196,7 @@ void startCountingUp() {
 // Start selecting the countdown duration
 void startSelectingDownDuration() {
     currentState = SELECTING_DOWN_DURATION;
-    countdownValue = 20;
+    countdownValue = 25 * 60;
     lastActivityTime = millis();  // Reset inactivity timer
     Serial.println("Selecting DOWN duration.");
 }
@@ -239,7 +244,7 @@ void resetFlowMinutes() {
 //=========================================================
 // Handle counting up or down logic
 void handleCounting(unsigned long currentMillis) {
-    if (!isCounting || (currentMillis - previousMillis < 60000)) return;
+    if (!isCounting || (currentMillis - previousMillis < 1000)) return;
 
     previousMillis = currentMillis;
 
@@ -268,12 +273,12 @@ void handleCounting(unsigned long currentMillis) {
 void successAnimation() {
     // display.clearDisplay();
     tft.fillScreen(TFT_BLACK);
-    int centerX = 64, centerY = 32;
+    int centerX = tft.width() / 2, centerY = tft.height() / 2;
 
-    for (int radius = 2; radius <= 30; radius += 2) {
+    for (int radius = 1; radius <= 72; radius += 1) {
         tft.drawCircle(centerX, centerY, radius, TFT_WHITE);
         // tft.display();
-        delay(100);
+        delay(10);
 
         if (radius % 4 == 0) {
             // display.clearDisplay();
@@ -285,9 +290,11 @@ void successAnimation() {
 
     tft.fillScreen(TFT_BLACK);
     // display.clearDisplay();
-    tft.setTextSize(2);
-    tft.setCursor(20, 20);
-    tft.print("SUCCESS!");
+    tft.setTextSize(3);
+    tft.setTextColor(TFT_WHITE);
+    tft.setTextDatum(CC_DATUM);
+    tft.drawString("SUCESS!", tft.width() / 2, tft.height() / 2);
+    // tft.print("SUCCESS!");
     // tft.display();
     delay(1000);
     tft.fillScreen(TFT_BLACK);
@@ -324,7 +331,7 @@ void handleRotaryInput() {
         Serial.print(" - Menu option: ");
         Serial.println(menuOptions[menuIndex]);
     } else if (currentState == SELECTING_DOWN_DURATION) {
-        countdownValue = max(1, countdownValue + rotation);
+        countdownValue = max(1, countdownValue + rotation * 60);
         updateDisplay();
         Serial.print(millis());  // Print the current time in milliseconds
         Serial.print(" - Countdown value: ");
