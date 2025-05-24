@@ -1,6 +1,6 @@
 #include <TFT_eSPI.h>
 #include <ESP32Encoder.h>
-#include "pins.h"
+#include <pins.h>
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite sprite = TFT_eSprite(&tft);  // Create sprite linked to tft
@@ -288,7 +288,8 @@ void successAnimation() {
         delay(10);
 
         if (radius % 4 == 0) {
-            tft.fillScreen(TFT_BLACK);
+            sprite.fillSprite(TFT_BLACK);
+            sprite.pushSprite(0,0);
             delay(2);
         }
     }
