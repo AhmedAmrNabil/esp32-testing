@@ -1,11 +1,12 @@
 #include <TFT_eSPI.h>
 #include <ESP32Encoder.h>
+#include "pins.h"
 
 TFT_eSPI tft = TFT_eSPI();
 
-#define SW 4
-#define CLK 15
-#define DT 2
+#define SW TX2
+#define CLK D4
+#define DT RX2
 
 //-----------------------------------------------
 int flowMinutes = 0;                              // Total flow minutes
