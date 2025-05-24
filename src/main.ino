@@ -26,7 +26,7 @@ State currentState = MENU;
 int countdownValue = 20;           // Default value for countdown
 int initialCountdownValue = 20;    // Store the countdown value when selected
 unsigned long previousMillis = 0;  // For counting logic
-int elapsedMinutes = 0;
+int elapsedSeconds = 0;
 bool isCounting = false;
 unsigned long buttonDebounceTime = 0;
 const unsigned long buttonDebounceDelay = 800;  // Debounce delay
@@ -86,28 +86,35 @@ void initDisplay() {
     tft.init();
     tft.setRotation(1);
     tft.fillScreen(TFT_BLACK);
+    // Initialize the sprite with TFT dimensions
+    sprite.createSprite(tft.width(), tft.height());
+
+    sprite.fillSprite(TFT_BLACK);  // Clear sprite
+    sprite.pushSprite(0, 0);       // Push empty screen at start
     Serial.println("Display initialized.");
 }
 
 //=========================================================
 // Update the OLED display with the current state
 void updateDisplay() {
-    tft.fillScreen(TFT_BLACK);
+    sprite.fillSprite(TFT_BLACK);
     // Display top row
     String topRowText;
 
     if (currentState == COUNTING_UP) {
-        topRowText = "Focus! \x18";  // Focus with upward triangle for counting UP
+        // topRowText = "Focus! \x18";  // Focus with upward triangle for counting UP
+        topRowText = "Focus!";  // Focus with upward triangle for counting UP
     } else if (currentState == COUNTING_DOWN) {
-        topRowText = "Focus! \x19";  // Focus with downward triangle for counting DOWN
+        // topRowText = "Focus! \x19";  // Focus with downward triangle for counting DOWN
+        topRowText = "Focus!";  // Focus with downward triangle for counting DOWN
     } else {
         topRowText = "Flow: " + String(flowMinutes);  // Display total flow minutes when not counting
     }
 
-    tft.setTextSize(3);  // Larger size for top row
-    tft.setTextDatum(TC_DATUM);
-    tft.setTextColor(TFT_YELLOW);
-    tft.drawString(topRowText, tft.width() / 2, tft.fontHeight() / 2);
+    sprite.setTextSize(3);  // Larger size for top row
+    sprite.setTextDatum(TC_DATUM);
+    sprite.setTextColor(TFT_YELLOW);
+    sprite.drawString(topRowText, tft.width() / 2, sprite.fontHeight() / 2);
 
     // Display main row (menu or counting values)
     String mainRowText;
@@ -116,8 +123,8 @@ void updateDisplay() {
     if (currentState == MENU) {
         mainRowText = menuOptions[menuIndex];  // Display UP, DOWN, or Reset in the menu
     } else if (currentState == COUNTING_UP) {
-        int seconds = elapsedMinutes % 60;
-        int mins = elapsedMinutes / 60;
+        int seconds = elapsedSeconds % 60;
+        int mins = elapsedSeconds / 60;
         snprintf(time, sizeof(time), "%02d:%02d", mins, seconds);
         mainRowText = String(time);  // Display counting up minutes
     } else if (currentState == COUNTING_DOWN || currentState == SELECTING_DOWN_DURATION) {
@@ -132,11 +139,11 @@ void updateDisplay() {
     int mainRowTextWidth = mainRowText.length() * 24;  // TextSize 4, so 24 pixels per char
     int mainRowX = (128 - mainRowTextWidth) / 2;       // Calculate centered X position
 
-    tft.setTextSize(5);
-    tft.setTextDatum(TC_DATUM);
-    tft.setTextColor(TFT_CYAN);
-    tft.drawString(mainRowText, tft.width() / 2, tft.fontHeight() * 1.6);
-
+    sprite.setTextSize(5);
+    sprite.setTextDatum(TC_DATUM);
+    sprite.setTextColor(TFT_CYAN);
+    sprite.drawString(mainRowText, tft.width() / 2, sprite.fontHeight() * 1.6);
+    sprite.pushSprite(0, 0);
     // display.display();  // Show the updated display
 }
 
@@ -186,7 +193,7 @@ void handleButtonPresses(unsigned long currentMillis) {
 // Start counting up
 void startCountingUp() {
     currentState = COUNTING_UP;
-    elapsedMinutes = 0;
+    elapsedSeconds = 0;
     isCounting = true;
     lastActivityTime = millis();  // Reset inactivity timer
     Serial.println("Counting UP started.");
@@ -216,7 +223,7 @@ void confirmCountdownSelection() {
 //=========================================================
 // Stop counting up and return to menu
 void stopCountingUp() {
-    flowMinutes += elapsedMinutes;
+    flowMinutes += elapsedSeconds / 60;
     successAnimation();
     currentState = MENU;
     isCounting = false;
@@ -226,7 +233,7 @@ void stopCountingUp() {
 //=========================================================
 // Stop counting down and return to menu
 void stopCountingDown() {
-    flowMinutes += (initialCountdownValue - countdownValue);
+    flowMinutes += (initialCountdownValue - countdownValue) / 60;
     successAnimation();
     currentState = MENU;
     isCounting = false;
@@ -249,10 +256,10 @@ void handleCounting(unsigned long currentMillis) {
     previousMillis = currentMillis;
 
     if (currentState == COUNTING_UP) {
-        elapsedMinutes++;
+        elapsedSeconds++;
         updateDisplay();
         Serial.print("Counting UP: ");
-        Serial.println(elapsedMinutes);
+        Serial.println(elapsedSeconds);
     } else if (currentState == COUNTING_DOWN) {
         countdownValue--;
         if (countdownValue <= 0) {
@@ -272,30 +279,27 @@ void handleCounting(unsigned long currentMillis) {
 // Success animation when a session ends
 void successAnimation() {
     // display.clearDisplay();
-    tft.fillScreen(TFT_BLACK);
+    sprite.fillSprite(TFT_BLACK);
     int centerX = tft.width() / 2, centerY = tft.height() / 2;
 
     for (int radius = 1; radius <= 72; radius += 1) {
-        tft.drawCircle(centerX, centerY, radius, TFT_WHITE);
-        // tft.display();
+        sprite.drawCircle(centerX, centerY, radius, TFT_WHITE);
+        sprite.pushSprite(0, 0);
         delay(10);
 
         if (radius % 4 == 0) {
-            // display.clearDisplay();
-            // display.display();
             tft.fillScreen(TFT_BLACK);
             delay(2);
         }
     }
 
-    tft.fillScreen(TFT_BLACK);
+    sprite.fillSprite(TFT_BLACK);
     // display.clearDisplay();
-    tft.setTextSize(3);
-    tft.setTextColor(TFT_WHITE);
-    tft.setTextDatum(CC_DATUM);
-    tft.drawString("SUCESS!", tft.width() / 2, tft.height() / 2);
-    // tft.print("SUCCESS!");
-    // tft.display();
+    sprite.setTextSize(3);
+    sprite.setTextColor(TFT_WHITE);
+    sprite.setTextDatum(CC_DATUM);
+    sprite.drawString("SUCESS!", tft.width() / 2, tft.height() / 2);
+    sprite.pushSprite(0, 0);
     delay(1000);
     tft.fillScreen(TFT_BLACK);
     // display.clearDisplay();
