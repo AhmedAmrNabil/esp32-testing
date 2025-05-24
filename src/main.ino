@@ -66,7 +66,7 @@ void loop() {
     handleCounting(currentMillis);
 
     // Handle inactivity
-    handleInactivity(currentMillis);
+    // handleInactivity(currentMillis);
 }
 
 //=========================================================
