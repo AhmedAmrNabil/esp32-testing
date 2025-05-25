@@ -273,7 +273,7 @@ void handleCounting(unsigned long currentMillis) {
     } else if (currentState == COUNTING_DOWN) {
         countdownValue--;
         if (countdownValue <= 0) {
-            flowMinutes += initialCountdownValue;
+            flowMinutes += initialCountdownValue / 60;
             successAnimation();
             currentState = MENU;
             isCounting = false;
