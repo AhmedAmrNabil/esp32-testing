@@ -8,6 +8,14 @@ TFT_eSprite sprite = TFT_eSprite(&tft);  // Create sprite linked to tft
 #define SW TX2
 #define CLK D4
 #define DT RX2
+#define BUZZER_PIN D25
+#define BUZZER_CH 0
+#define PWM_FREQ 2000     // 2kHz (matches many active buzzers)
+#define PWM_RESOLUTION 8  // 8-bit resolution (0–255)
+#define TFT_BG_CLR 0xfb00
+#define MAIN_CLR TFT_BLACK
+#define ALT_CLR TFT_BLACK
+#define SUCESS_CLR TFT_BLACK
 
 //-----------------------------------------------
 int flowMinutes = 0;                              // Total flow minutes
@@ -77,6 +85,8 @@ void initHardware() {
     pinMode(SW, INPUT_PULLUP);
     encoder.attachHalfQuad(DT, CLK);
     encoder.setCount(oldCount);
+    ledcSetup(BUZZER_CH, PWM_FREQ, PWM_RESOLUTION);
+    ledcAttachPin(BUZZER_PIN, BUZZER_CH);
     Serial.begin(115200);
 }
 
@@ -85,19 +95,19 @@ void initHardware() {
 void initDisplay() {
     tft.init();
     tft.setRotation(1);
-    tft.fillScreen(TFT_BLACK);
+    tft.fillScreen(TFT_BG_CLR);
     // Initialize the sprite with TFT dimensions
     sprite.createSprite(tft.width(), tft.height());
 
-    sprite.fillSprite(TFT_BLACK);  // Clear sprite
-    sprite.pushSprite(0, 0);       // Push empty screen at start
+    sprite.fillSprite(TFT_BG_CLR);  // Clear sprite
+    sprite.pushSprite(0, 0);        // Push empty screen at start
     Serial.println("Display initialized.");
 }
 
 //=========================================================
 // Update the OLED display with the current state
 void updateDisplay() {
-    sprite.fillSprite(TFT_BLACK);
+    sprite.fillSprite(TFT_BG_CLR);
     // Display top row
     String topRowText;
 
@@ -113,7 +123,7 @@ void updateDisplay() {
 
     sprite.setTextSize(3);  // Larger size for top row
     sprite.setTextDatum(TC_DATUM);
-    sprite.setTextColor(TFT_YELLOW);
+    sprite.setTextColor(MAIN_CLR);
     sprite.drawString(topRowText, tft.width() / 2, sprite.fontHeight() / 2);
 
     // Display main row (menu or counting values)
@@ -141,7 +151,7 @@ void updateDisplay() {
 
     sprite.setTextSize(5);
     sprite.setTextDatum(TC_DATUM);
-    sprite.setTextColor(TFT_CYAN);
+    sprite.setTextColor(ALT_CLR);
     sprite.drawString(mainRowText, tft.width() / 2, sprite.fontHeight() * 1.6);
     sprite.pushSprite(0, 0);
     // display.display();  // Show the updated display
@@ -279,31 +289,31 @@ void handleCounting(unsigned long currentMillis) {
 // Success animation when a session ends
 void successAnimation() {
     // display.clearDisplay()
+    pulseBuzzer();
+    pulseBuzzer();
     idleStartTime = currentMillis;
-    sprite.fillSprite(TFT_BLACK);
+    sprite.fillSprite(TFT_BG_CLR);
     int centerX = tft.width() / 2, centerY = tft.height() / 2;
 
     for (int radius = 1; radius <= 72; radius += 1) {
-        sprite.drawCircle(centerX, centerY, radius, TFT_WHITE);
-        sprite.pushSprite(0, 0);
-        delay(10);
-
-        if (radius % 4 == 0) {
-            sprite.fillSprite(TFT_BLACK);
-            sprite.pushSprite(0, 0);
+        if (radius % 2 == 0) {
+            sprite.fillSprite(TFT_BG_CLR);
             delay(2);
         }
+        sprite.drawCircle(centerX, centerY, radius, SUCESS_CLR);
+        delay(10);
+        sprite.pushSprite(0, 0);
     }
 
-    sprite.fillSprite(TFT_BLACK);
+    sprite.fillSprite(TFT_BG_CLR);
     // display.clearDisplay();
     sprite.setTextSize(3);
-    sprite.setTextColor(TFT_WHITE);
+    sprite.setTextColor(SUCESS_CLR);
     sprite.setTextDatum(CC_DATUM);
     sprite.drawString("SUCESS!", tft.width() / 2, tft.height() / 2);
     sprite.pushSprite(0, 0);
     delay(1000);
-    tft.fillScreen(TFT_BLACK);
+    tft.fillScreen(TFT_BG_CLR);
     // display.clearDisplay();
     // display.display();
 }
@@ -411,4 +421,11 @@ void handleInactivity(unsigned long currentMillis) {
         Serial.print(millis());  // Print the current time in milliseconds
         Serial.println(" - Exiting IDLE mode. Back to MENU.");
     }
+}
+
+void pulseBuzzer() {
+    ledcWrite(BUZZER_CH, 200);
+    delay(200);
+    ledcWrite(BUZZER_CH, 0);
+    delay(200);
 }
