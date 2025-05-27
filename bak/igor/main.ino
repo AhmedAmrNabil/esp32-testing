@@ -1,6 +1,7 @@
 #include <TFT_eSPI.h>
 #include <ESP32Encoder.h>
 #include <pins.h>
+#include "image.h"
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite sprite = TFT_eSprite(&tft);  // Create sprite linked to tft
@@ -8,14 +9,14 @@ TFT_eSprite sprite = TFT_eSprite(&tft);  // Create sprite linked to tft
 #define SW TX2
 #define CLK D4
 #define DT RX2
-#define BUZZER_PIN D25
+#define BUZZER_PIN D15
 #define BUZZER_CH 0
 #define PWM_FREQ 2000     // 2kHz (matches many active buzzers)
 #define PWM_RESOLUTION 8  // 8-bit resolution (0–255)
 #define TFT_BG_CLR 0xfb00
-#define MAIN_CLR TFT_BLACK
-#define ALT_CLR TFT_BLACK
-#define SUCESS_CLR TFT_BLACK
+#define MAIN_CLR TFT_WHITE
+#define ALT_CLR TFT_WHITE
+#define SUCESS_CLR TFT_WHITE
 
 //-----------------------------------------------
 int flowMinutes = 0;                              // Total flow minutes
@@ -94,6 +95,9 @@ void initHardware() {
 // Initialize the OLED display
 void initDisplay() {
     tft.init();
+#ifdef USE_DMA_TO_TFT
+    tft.initDMA();
+#endif
     tft.setRotation(1);
     tft.fillScreen(TFT_BG_CLR);
     // Initialize the sprite with TFT dimensions
@@ -107,7 +111,9 @@ void initDisplay() {
 //=========================================================
 // Update the OLED display with the current state
 void updateDisplay() {
-    sprite.fillSprite(TFT_BG_CLR);
+    // sprite.fillSprite(TFT_BG_CLR);
+    sprite.setSwapBytes(true);
+    sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);
     // Display top row
     String topRowText;
 
@@ -125,7 +131,6 @@ void updateDisplay() {
     sprite.setTextDatum(TC_DATUM);
     sprite.setTextColor(MAIN_CLR);
     sprite.drawString(topRowText, tft.width() / 2, sprite.fontHeight() / 2);
-
     // Display main row (menu or counting values)
     String mainRowText;
     char time[10];
@@ -292,12 +297,12 @@ void successAnimation() {
     pulseBuzzer();
     pulseBuzzer();
     idleStartTime = currentMillis;
-    sprite.fillSprite(TFT_BG_CLR);
+    sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);
     int centerX = tft.width() / 2, centerY = tft.height() / 2;
 
     for (int radius = 1; radius <= 72; radius += 1) {
         if (radius % 2 == 0) {
-            sprite.fillSprite(TFT_BG_CLR);
+            sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);
             delay(2);
         }
         sprite.drawCircle(centerX, centerY, radius, SUCESS_CLR);
@@ -305,7 +310,7 @@ void successAnimation() {
         sprite.pushSprite(0, 0);
     }
 
-    sprite.fillSprite(TFT_BG_CLR);
+    sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);
     // display.clearDisplay();
     sprite.setTextSize(3);
     sprite.setTextColor(SUCESS_CLR);
@@ -425,7 +430,7 @@ void handleInactivity(unsigned long currentMillis) {
 
 void pulseBuzzer() {
     ledcWrite(BUZZER_CH, 200);
-    delay(200);
+    delay(100);
     ledcWrite(BUZZER_CH, 0);
-    delay(200);
+    delay(100);
 }
