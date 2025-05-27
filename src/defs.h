@@ -14,6 +14,6 @@
 #define SUCESS_CLR TFT_WHITE
 #define HOLD_THRESHOLD 300  // ms
 #define BUZZER_DURATION 50  // ms
-
+#define BG_IMG_ARR bg_lo_fi
 
 #endif  // DEFS_H

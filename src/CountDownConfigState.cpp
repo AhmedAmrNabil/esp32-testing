@@ -8,6 +8,7 @@
 #include "CountDownConfigState.h"
 #include "CountDownState.h"
 #include "image.h"
+#include "defs.h"
 
 extern TFT_eSPI tft;        // TFT display object
 extern TFT_eSprite sprite;  // Sprite for double buffering
@@ -24,8 +25,8 @@ void CountDownConfigState::enter() {
 }
 
 void CountDownConfigState::update(unsigned int currentMillis) {
-    this->currentMillis = currentMillis;                                // Update currentMillis for this state
-    sprite.pushImage(0, 0, tft.width(), tft.height(), bg_lo_fi_anime);  // Display background image
+    this->currentMillis = currentMillis;                            // Update currentMillis for this state
+    sprite.pushImage(0, 0, tft.width(), tft.height(), BG_IMG_ARR);  // Display background image
     // write current option to the screen
 
     sprite.setTextSize(3);  // Larger size for top row

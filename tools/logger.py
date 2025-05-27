@@ -3,7 +3,7 @@ import socket
 import struct
 import os
 import time
-from Forza import Forza  # Assuming Forza class is defined in Forza.py
+from tools.Forza import Forza  # Assuming Forza class is defined in Forza.py
 
 IP = '0.0.0.0'  # Receive any incoming UDP packet on this port
 PORT = 1151  # Example port

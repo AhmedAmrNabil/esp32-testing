@@ -1,6 +1,8 @@
 #include <TFT_eSPI.h>
 #include <ESP32Encoder.h>
+#include <ezBuzzer.h>
 #include <pins.h>
+
 #include "image.h"
 #include "StateMachine.h"
 #include "MenuState.h"
@@ -12,11 +14,15 @@ TFT_eSprite sprite = TFT_eSprite(&tft);
 ESP32Encoder encoder;
 unsigned int currentMillis;
 StateMachine* stateMachine;
+ezBuzzer buzzer(BUZZER_PIN);  // Create ezBuzzer object that attaches to a pin
 
 bool lastButtonState = HIGH;
 bool buttonPressed = false;
 unsigned long pressStartTime = 0;
 bool holdEventFired = false;
+extern int melody[];
+
+extern int noteDurations[];
 
 //=========================================================
 void setup() {
@@ -31,7 +37,7 @@ void loop() {
     currentMillis = millis();
     handleEncoderTurn();
     handleButtonPress();
-    updateBuzzer();  // Update buzzer state
+    buzzer.loop();  // Call the buzzer loop to handle beeping
     stateMachine->update(currentMillis);
 }
 
@@ -44,6 +50,7 @@ void initHardware() {
     encoder.setCount(0);
     ledcSetup(BUZZER_CH, PWM_FREQ, PWM_RESOLUTION);
     ledcAttachPin(BUZZER_PIN, BUZZER_CH);
+    buzzer.playMelody(melody, noteDurations, 3);  // Start melody
     Serial.begin(115200);
 }
 
@@ -55,12 +62,12 @@ void initDisplay() {
     tft.setRotation(1);
     // tft.fillScreen(TFT_BG_CLR);
     tft.setSwapBytes(true);
-    tft.pushImage(0, 0, 240, 135, bg_lo_fi_anime);  // Display initial image
+    tft.pushImage(0, 0, 240, 135, BG_IMG_ARR);  // Display initial image
     // Initialize the sprite with TFT dimensions
     sprite.createSprite(tft.width(), tft.height());
     sprite.setSwapBytes(true);
-    sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);  // Display initial image
-    sprite.pushSprite(0, 0);                           // Push empty screen at start
+    sprite.pushImage(0, 0, 240, 135, BG_IMG_ARR);  // Display initial image
+    sprite.pushSprite(0, 0);                       // Push empty screen at start
     Serial.println("Display initialized.");
 }
 
@@ -73,7 +80,7 @@ void initStateMachine() {
 void handleEncoderTurn() {
     int delta = encoder.getCount();
     if (delta != 0) {
-        pulseBuzzer();                                    // Provide feedback for button click
+        buzzer.beep(50);                                  // Provide feedback for button click
         encoder.setCount(0);                              // Reset count after handling
         stateMachine->onEncoderTurn(delta / abs(delta));  // Pass absolute value of delta
     }
@@ -90,7 +97,7 @@ void handleButtonPress() {
         // Button released
         if (buttonPressed) {
             if (!holdEventFired) {
-                pulseBuzzer();  // Provide feedback for button click
+                buzzer.beep(50);  // Provide feedback for button click
                 stateMachine->onButtonClick();
             }
             buttonPressed = false;
@@ -100,38 +107,10 @@ void handleButtonPress() {
 
     if (buttonPressed && !holdEventFired && (millis() - pressStartTime >= HOLD_THRESHOLD)) {
         // Button held down
-        pulseBuzzer();  // Provide feedback for button click
+        buzzer.beep(100);  // Provide feedback for button click
         stateMachine->onButtonHold();
         holdEventFired = true;
     }
 
     lastButtonState = currentButtonState;
-}
-
-// Globals for buzzer timing
-unsigned long buzzerStartTime = 0;
-bool buzzerOn = false;
-bool buzzerActive = false;
-
-void pulseBuzzer() {
-    buzzerStartTime = millis();
-    buzzerOn = true;
-    buzzerActive = true;
-    ledcWrite(BUZZER_CH, 200);  // Turn buzzer ON
-}
-
-void updateBuzzer() {
-    if (!buzzerActive) return;
-
-    unsigned long elapsed = millis() - buzzerStartTime;
-
-    if (buzzerOn && elapsed >= BUZZER_DURATION) {
-        // After 100ms buzzer ON, turn it OFF
-        ledcWrite(BUZZER_CH, 0);
-        buzzerOn = false;
-        buzzerStartTime = millis();  // reset timer for off duration
-    } else if (!buzzerOn && elapsed >= BUZZER_DURATION) {
-        // After 100ms buzzer OFF, stop pulse
-        buzzerActive = false;
-    }
 }

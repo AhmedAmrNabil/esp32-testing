@@ -113,7 +113,7 @@ void initDisplay() {
 void updateDisplay() {
     // sprite.fillSprite(TFT_BG_CLR);
     sprite.setSwapBytes(true);
-    sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);
+    sprite.pushImage(0, 0, 240, 135, BG_IMG_ARR);
     // Display top row
     String topRowText;
 
@@ -297,12 +297,12 @@ void successAnimation() {
     pulseBuzzer();
     pulseBuzzer();
     idleStartTime = currentMillis;
-    sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);
+    sprite.pushImage(0, 0, 240, 135, BG_IMG_ARR);
     int centerX = tft.width() / 2, centerY = tft.height() / 2;
 
     for (int radius = 1; radius <= 72; radius += 1) {
         if (radius % 2 == 0) {
-            sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);
+            sprite.pushImage(0, 0, 240, 135, BG_IMG_ARR);
             delay(2);
         }
         sprite.drawCircle(centerX, centerY, radius, SUCESS_CLR);
@@ -310,7 +310,7 @@ void successAnimation() {
         sprite.pushSprite(0, 0);
     }
 
-    sprite.pushImage(0, 0, 240, 135, bg_lo_fi_anime);
+    sprite.pushImage(0, 0, 240, 135, BG_IMG_ARR);
     // display.clearDisplay();
     sprite.setTextSize(3);
     sprite.setTextColor(SUCESS_CLR);

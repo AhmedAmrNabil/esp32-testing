@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
+#include <ezBuzzer.h>
 
 #include "StateMachine.h"
 #include "State.h"
@@ -10,7 +11,16 @@
 
 extern TFT_eSPI tft;        // TFT display object
 extern TFT_eSprite sprite;  // Sprite for double buffering
-extern void pulseBuzzer();  // Function to pulse the buzzer
+extern ezBuzzer buzzer;     // Buzzer object
+
+int melody[] = {
+    1,
+    0,
+    1,
+};
+
+int noteDurations[] = {
+    10, 10, 10};
 
 CountDownState::CountDownState(StateMachine* sm, int time, unsigned int currentMillis) : State(sm), stateMachine(sm) {
     // Constructor initializes the countdown time
@@ -32,14 +42,14 @@ void CountDownState::update(unsigned int currentMillis) {
                 countdownTime--;  // Decrement countdown time
             } else {
                 Serial.println("Countdown finished!");
-                pulseBuzzer();                                           // Deactivate buzzer
-                pulseBuzzer();                                           // Deactivate buzzer
+                // buzzer.beep(1000);
+                buzzer.playMelody(melody, noteDurations, 3);             // Beep for 1 second when countdown finishes
                 stateMachine->changeState(new MenuState(stateMachine));  // Return to Menu State
             }
         }
     }
 
-    sprite.pushImage(0, 0, tft.width(), tft.height(), bg_lo_fi_anime);  // Display background image
+    sprite.pushImage(0, 0, tft.width(), tft.height(), BG_IMG_ARR);  // Display background image
 
     String title = "Count Down";
     if (!isRunning) {
