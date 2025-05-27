@@ -34,7 +34,7 @@ void CountDownConfigState::update(unsigned int currentMillis) {
     sprite.drawString("Time", tft.width() / 2, sprite.fontHeight() / 2);
 
     char time[10];
-    sniprintf(time, sizeof(time), "%2d:00", countdownTime);
+    sniprintf(time, sizeof(time), "%02d:00", countdownTime);
     sprite.setTextSize(5);
     sprite.setTextDatum(TC_DATUM);
     sprite.setTextColor(TFT_WHITE);

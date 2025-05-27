@@ -6,9 +6,11 @@
 #include "State.h"
 #include "CountDownConfigState.h"
 #include "image.h"
+#include "defs.h"
 
 extern TFT_eSPI tft;        // TFT display object
 extern TFT_eSprite sprite;  // Sprite for double buffering
+String menuOptions[3] = {"Up", "Down", "Reset"};
 
 MenuState::MenuState(StateMachine* sm) : State(sm), stateMachine(sm), selectedItem(COUNT_UP) {}
 
@@ -30,8 +32,7 @@ void MenuState::update(unsigned int currentMillis) {
     sprite.setTextColor(TFT_WHITE);
     sprite.drawString("Main Menu", tft.width() / 2, sprite.fontHeight() / 2);
 
-    String menuOptions[3] = {"Up", "Down", "Reset"};
-    sprite.setTextSize(4);
+    sprite.setTextSize(5);
     sprite.setTextDatum(TC_DATUM);
     sprite.setTextColor(TFT_WHITE);
     sprite.drawString(menuOptions[selectedItem], tft.width() / 2, sprite.fontHeight() * 1.6);

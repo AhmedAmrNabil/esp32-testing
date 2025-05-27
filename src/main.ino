@@ -13,7 +13,6 @@ ESP32Encoder encoder;
 unsigned int currentMillis;
 StateMachine* stateMachine;
 
-
 bool lastButtonState = HIGH;
 bool buttonPressed = false;
 unsigned long pressStartTime = 0;
@@ -32,9 +31,11 @@ void loop() {
     currentMillis = millis();
     handleEncoderTurn();
     handleButtonPress();
+    updateBuzzer();  // Update buzzer state
     stateMachine->update(currentMillis);
 }
 
+//=========================================================
 void initHardware() {
     pinMode(CLK, INPUT_PULLUP);
     pinMode(DT, INPUT_PULLUP);
@@ -72,8 +73,9 @@ void initStateMachine() {
 void handleEncoderTurn() {
     int delta = encoder.getCount();
     if (delta != 0) {
-        encoder.setCount(0);  // Reset count after handling
-        stateMachine->onEncoderTurn(delta);
+        pulseBuzzer();                                    // Provide feedback for button click
+        encoder.setCount(0);                              // Reset count after handling
+        stateMachine->onEncoderTurn(delta / abs(delta));  // Pass absolute value of delta
     }
 }
 
@@ -88,6 +90,7 @@ void handleButtonPress() {
         // Button released
         if (buttonPressed) {
             if (!holdEventFired) {
+                pulseBuzzer();  // Provide feedback for button click
                 stateMachine->onButtonClick();
             }
             buttonPressed = false;
@@ -97,9 +100,38 @@ void handleButtonPress() {
 
     if (buttonPressed && !holdEventFired && (millis() - pressStartTime >= HOLD_THRESHOLD)) {
         // Button held down
+        pulseBuzzer();  // Provide feedback for button click
         stateMachine->onButtonHold();
         holdEventFired = true;
     }
 
     lastButtonState = currentButtonState;
+}
+
+// Globals for buzzer timing
+unsigned long buzzerStartTime = 0;
+bool buzzerOn = false;
+bool buzzerActive = false;
+
+void pulseBuzzer() {
+    buzzerStartTime = millis();
+    buzzerOn = true;
+    buzzerActive = true;
+    ledcWrite(BUZZER_CH, 200);  // Turn buzzer ON
+}
+
+void updateBuzzer() {
+    if (!buzzerActive) return;
+
+    unsigned long elapsed = millis() - buzzerStartTime;
+
+    if (buzzerOn && elapsed >= BUZZER_DURATION) {
+        // After 100ms buzzer ON, turn it OFF
+        ledcWrite(BUZZER_CH, 0);
+        buzzerOn = false;
+        buzzerStartTime = millis();  // reset timer for off duration
+    } else if (!buzzerOn && elapsed >= BUZZER_DURATION) {
+        // After 100ms buzzer OFF, stop pulse
+        buzzerActive = false;
+    }
 }

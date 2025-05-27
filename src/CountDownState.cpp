@@ -10,6 +10,7 @@
 
 extern TFT_eSPI tft;        // TFT display object
 extern TFT_eSprite sprite;  // Sprite for double buffering
+extern void pulseBuzzer();  // Function to pulse the buzzer
 
 CountDownState::CountDownState(StateMachine* sm, int time, unsigned int currentMillis) : State(sm), stateMachine(sm) {
     // Constructor initializes the countdown time
@@ -21,13 +22,6 @@ CountDownState::CountDownState(StateMachine* sm, int time, unsigned int currentM
 
 void CountDownState::enter() {
     Serial.println("Entering Count Down State");
-}
-
-void pulseBuzzer() {
-    ledcWrite(BUZZER_CH, 200);
-    delay(100);
-    ledcWrite(BUZZER_CH, 0);
-    delay(100);
 }
 
 void CountDownState::update(unsigned int currentMillis) {

@@ -12,6 +12,8 @@
 #define MAIN_CLR TFT_WHITE
 #define ALT_CLR TFT_WHITE
 #define SUCESS_CLR TFT_WHITE
-#define HOLD_THRESHOLD 200  // ms
+#define HOLD_THRESHOLD 300  // ms
+#define BUZZER_DURATION 50  // ms
+
 
 #endif  // DEFS_H
