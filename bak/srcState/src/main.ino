@@ -80,7 +80,7 @@ void initStateMachine() {
 void handleEncoderTurn() {
     int delta = encoder.getCount();
     if (delta != 0) {
-        buzzer.beep(20);                                  // Provide feedback for button click
+        buzzer.beep(50);                                  // Provide feedback for button click
         encoder.setCount(0);                              // Reset count after handling
         stateMachine->onEncoderTurn(delta / abs(delta));  // Pass absolute value of delta
     }
