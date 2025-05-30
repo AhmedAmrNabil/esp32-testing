@@ -168,7 +168,7 @@
 #define TFT_MOSI 23  // Automatically assigned with ESP8266 if not defined
 #define TFT_SCLK 18  // Automatically assigned with ESP8266 if not defined
 
-#define TFT_CS 22   // Chip select control pin D8
+#define TFT_CS 5   // Chip select control pin D8
 #define TFT_DC 21   // Data Command control pin
 #define TFT_RST 19  // Reset pin (could connect to NodeMCU RST, see next line)
 // #define TFT_RST  -1     // Set TFT_RST to -1 if the display RESET is connected to NodeMCU RST or 3.3V
@@ -221,7 +221,7 @@
 // #define TFT_RST  33  // Reset pin (could connect to Arduino RESET pin)
 // #define TFT_BL   22  // LED back-light
 
-// #define TOUCH_CS 21     // Chip select pin (T_CS) of touch screen
+#define TOUCH_CS -1     // Chip select pin (T_CS) of touch screen
 
 // #define TFT_WR 22    // Write strobe for modified Raspberry Pi TFT only
 
@@ -308,7 +308,7 @@
 #define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
 #define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
 // #define LOAD_FONT8N // Font 8. Alternative to Font 8 above, slightly narrower, so 3 digits fit a 160 pixel TFT
-#define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
+// #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
 
 // Comment out the #define below to stop the SPIFFS filing system and smooth font code being loaded
 // this will save ~20kbytes of FLASH
@@ -356,7 +356,7 @@
 // #define SPI_FREQUENCY 27000000
 // #define SPI_FREQUENCY  40000000
 // #define SPI_FREQUENCY  55000000 // STM32 SPI1 only (SPI2 maximum is 27MHz)
-#define SPI_FREQUENCY 80000000
+#define SPI_FREQUENCY 55000000
 
 // Optional reduced SPI frequency for reading TFT
 #define SPI_READ_FREQUENCY 20000000
