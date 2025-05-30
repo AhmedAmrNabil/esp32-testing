@@ -20,8 +20,8 @@ bool lastButtonState = HIGH;
 bool buttonPressed = false;
 unsigned long pressStartTime = 0;
 bool holdEventFired = false;
+int lastEncoderCount = 0;
 extern int melody[];
-
 extern int noteDurations[];
 
 //=========================================================
@@ -43,10 +43,10 @@ void loop() {
 
 //=========================================================
 void initHardware() {
-    pinMode(CLK, INPUT_PULLUP);
-    pinMode(DT, INPUT_PULLUP);
+    pinMode(CLK, INPUT);
+    pinMode(DT, INPUT);
     pinMode(SW, INPUT_PULLUP);
-    encoder.attachHalfQuad(DT, CLK);
+    encoder.attachHalfQuad(CLK, DT);
     encoder.setCount(0);
     ledcSetup(BUZZER_CH, PWM_FREQ, PWM_RESOLUTION);
     ledcAttachPin(BUZZER_PIN, BUZZER_CH);
@@ -78,12 +78,16 @@ void initStateMachine() {
 }
 
 void handleEncoderTurn() {
-    int delta = encoder.getCount();
-    if (delta != 0) {
-        buzzer.beep(20);                                  // Provide feedback for button click
-        encoder.setCount(0);                              // Reset count after handling
-        stateMachine->onEncoderTurn(delta / abs(delta));  // Pass absolute value of delta
-    }
+    int current = encoder.getCount();
+    int delta = current - lastEncoderCount;
+    if (abs(delta) >= 2) {  // Only respond when a full detent (2 counts) is passed
+        int detents = delta / 2;  // Normalize to detents
+        int direction = detents / abs(detents);  // Normalize to +1/-1
+        buzzer.beep(20);
+        stateMachine->onEncoderTurn(direction);
+
+        lastEncoderCount += detents * 2;  // Only advance the count by full detents
+    }                      // Update last encoder count
 }
 
 void handleButtonPress() {
