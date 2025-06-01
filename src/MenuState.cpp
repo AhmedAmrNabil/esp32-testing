@@ -29,12 +29,13 @@ void MenuState::update(unsigned int currentMillis) {
 
     sprite.setTextSize(3);  // Larger size for top row
     sprite.setTextDatum(TC_DATUM);
-    sprite.setTextColor(TFT_WHITE);
+    sprite.setTextColor(TITLE_CLR);
     sprite.drawString("Main Menu", tft.width() / 2, sprite.fontHeight() / 2);
 
     sprite.setTextSize(5);
     sprite.setTextDatum(TC_DATUM);
-    sprite.setTextColor(TFT_WHITE);
+    sprite.setTextColor(MAIN_CLR);
+    // Draw the selected menu item
     sprite.drawString(menuOptions[selectedItem], tft.width() / 2, sprite.fontHeight() * 1.6);
     sprite.pushSprite(0, 0);  // Push the sprite to the display
 }

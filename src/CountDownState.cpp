@@ -57,14 +57,14 @@ void CountDownState::update(unsigned int currentMillis) {
     }
     sprite.setTextSize(3);  // Larger size for top row
     sprite.setTextDatum(TC_DATUM);
-    sprite.setTextColor(TFT_WHITE);
+    sprite.setTextColor(TITLE_CLR);
     sprite.drawString(title, tft.width() / 2, sprite.fontHeight() / 2);
 
     char time[10];
     snprintf(time, sizeof(time), "%02d:%02d", countdownTime / 60, countdownTime % 60);
     sprite.setTextSize(5);
     sprite.setTextDatum(TC_DATUM);
-    sprite.setTextColor(TFT_WHITE);
+    sprite.setTextColor(MAIN_CLR);
     sprite.drawString(time, tft.width() / 2, sprite.fontHeight() * 1.6);
 
     sprite.pushSprite(0, 0);  // Push the sprite to the display

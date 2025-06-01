@@ -56,7 +56,7 @@ void initHardware() {
 
 void initDisplay() {
     tft.init();
-#ifdef USE_DMA_TO_TFT
+#ifdef USE_DMA
     tft.initDMA();
 #endif
     tft.setRotation(1);
@@ -80,14 +80,14 @@ void initStateMachine() {
 void handleEncoderTurn() {
     int current = encoder.getCount();
     int delta = current - lastEncoderCount;
-    if (abs(delta) >= 2) {  // Only respond when a full detent (2 counts) is passed
-        int detents = delta / 2;  // Normalize to detents
+    if (abs(delta) >= 2) {                       // Only respond when a full detent (2 counts) is passed
+        int detents = delta / 2;                 // Normalize to detents
         int direction = detents / abs(detents);  // Normalize to +1/-1
         buzzer.beep(20);
         stateMachine->onEncoderTurn(direction);
 
         lastEncoderCount += detents * 2;  // Only advance the count by full detents
-    }                      // Update last encoder count
+    }  // Update last encoder count
 }
 
 void handleButtonPress() {
