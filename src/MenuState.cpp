@@ -24,8 +24,9 @@ void MenuState::update(unsigned int currentMillis) {
     // Update menu display or handle user input
     // Serial.println("Updating Menu State");
     // Serial.printf("Menu item selected: %d\n", selectedItem);
-    sprite.pushImage(0, 0, tft.width(), tft.height(), BG_IMG_ARR);  // Display background image
+    // sprite.pushImage(0, 0, tft.width(), tft.height(), BG_IMG_ARR);  // Display background image
     // write current option to the screen
+    sprite.fillSprite(BG_CLR);  // Clear the sprite with background color
 
     sprite.setTextSize(3);  // Larger size for top row
     sprite.setTextDatum(TC_DATUM);

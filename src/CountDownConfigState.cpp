@@ -25,8 +25,10 @@ void CountDownConfigState::enter() {
 }
 
 void CountDownConfigState::update(unsigned int currentMillis) {
-    this->currentMillis = currentMillis;                            // Update currentMillis for this state
-    sprite.pushImage(0, 0, tft.width(), tft.height(), BG_IMG_ARR);  // Display background image
+    this->currentMillis = currentMillis;  // Update currentMillis for this state
+    // sprite.pushImage(0, 0, tft.width(), tft.height(), BG_IMG_ARR);  // Display background image
+    sprite.fillSprite(BG_CLR);  // Clear the sprite with background color
+
     // write current option to the screen
 
     sprite.setTextSize(3);  // Larger size for top row

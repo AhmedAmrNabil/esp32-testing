@@ -49,7 +49,8 @@ void CountDownState::update(unsigned int currentMillis) {
         }
     }
 
-    sprite.pushImage(0, 0, tft.width(), tft.height(), BG_IMG_ARR);  // Display background image
+    // sprite.pushImage(0, 0, tft.width(), tft.height(), BG_IMG_ARR);  // Display background image
+    sprite.fillSprite(BG_CLR);  // Clear the sprite with background color
 
     String title = "Count Down";
     if (!isRunning) {

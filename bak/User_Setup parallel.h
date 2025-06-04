@@ -74,7 +74,7 @@
 // Try ONE option at a time to find the correct colour order for your display
 
 //  #define TFT_RGB_ORDER TFT_RGB  // Colour order Red-Green-Blue
- #define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
+#define TFT_RGB_ORDER TFT_BGR  // Colour order Blue-Green-Red
 
 // For M5Stack ESP32 module with integrated ILI9341 display ONLY, remove // in line below
 
@@ -82,14 +82,14 @@
 
 // For ST7789, ST7735, ILI9163 and GC9A01 ONLY, define the pixel width and height in portrait orientation
 // #define TFT_WIDTH  80
-#define TFT_WIDTH 320
+#define TFT_WIDTH 240
 // #define TFT_WIDTH  128
 // #define TFT_WIDTH  172 // ST7789 172 x 320
 // #define TFT_WIDTH  170 // ST7789 170 x 320
 // #define TFT_WIDTH  240 // ST7789 240 x 240 and 240 x 320
 // #define TFT_HEIGHT 160
 // #define TFT_HEIGHT 128
-#define TFT_HEIGHT 240  // ST7789 240 x 240
+#define TFT_HEIGHT 320  // ST7789 240 x 240
 // #define TFT_HEIGHT 320 // ST7789 240 x 320
 // #define TFT_HEIGHT 240 // GC9A01 240 x 240
 
@@ -248,21 +248,21 @@
 #define TFT_PARALLEL_8_BIT
 
 // The ESP32 and TFT the pins used for testing are:
-#define TFT_RST  13  // Reset pin, toggles on startup
-#define TFT_CS   14  // Chip select control pin (library pulls permanently low
-#define TFT_DC   27  // Data Command control pin - must use a pin in the range 0-31
+#define TFT_RST 32  // Reset pin, toggles on startup
+#define TFT_CS 33   // Chip select control pin (library pulls permanently low
+#define TFT_DC 23   // Data Command control pin - must use a pin in the range 0-31
 
-#define TFT_WR    26  // Write strobe control pin - must use a pin in the range 0-31
-#define TFT_RD    25  // Read strobe control pin
+#define TFT_WR 21  // Write strobe control pin - must use a pin in the range 0-31
+#define TFT_RD 19  // Read strobe control pin
 
-#define TFT_D0   16  // Must use pins in the range 0-31 for the data bus
-#define TFT_D1   17  // so a single register write sets/clears all bits.
-#define TFT_D2   5  // Pins can be randomly assigned, this does not affect
-#define TFT_D3   18  // TFT screen update performance.
-#define TFT_D4   19
-#define TFT_D5   21
-#define TFT_D6   22
-#define TFT_D7   23
+#define TFT_D0 12  // Must use pins in the range 0-31 for the data bus
+#define TFT_D1 13  // so a single register write sets/clears all bits.
+#define TFT_D2 18  // Pins can be randomly assigned, this does not affect
+#define TFT_D3 5   // TFT screen update performance.
+#define TFT_D4 25
+#define TFT_D5 26
+#define TFT_D6 27
+#define TFT_D7 14
 
 // ######       EDIT THE PINs BELOW TO SUIT YOUR STM32 SPI TFT SETUP        ######
 
@@ -301,14 +301,14 @@
 // normally necessary. If all fonts are loaded the extra FLASH space required is
 // about 17Kbytes. To save FLASH space only enable the fonts you need!
 
-#define LOAD_GLCD   // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
-#define LOAD_FONT2  // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
-#define LOAD_FONT4  // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
-#define LOAD_FONT6  // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm
-#define LOAD_FONT7  // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
-#define LOAD_FONT8  // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
-// #define LOAD_FONT8N // Font 8. Alternative to Font 8 above, slightly narrower, so 3 digits fit a 160 pixel TFT
-// #define LOAD_GFXFF  // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
+#define LOAD_GLCD    // Font 1. Original Adafruit 8 pixel font needs ~1820 bytes in FLASH
+#define LOAD_FONT2   // Font 2. Small 16 pixel high font, needs ~3534 bytes in FLASH, 96 characters
+#define LOAD_FONT4   // Font 4. Medium 26 pixel high font, needs ~5848 bytes in FLASH, 96 characters
+#define LOAD_FONT6   // Font 6. Large 48 pixel font, needs ~2666 bytes in FLASH, only characters 1234567890:-.apm
+#define LOAD_FONT7   // Font 7. 7 segment 48 pixel font, needs ~2438 bytes in FLASH, only characters 1234567890:-.
+#define LOAD_FONT8   // Font 8. Large 75 pixel font needs ~3256 bytes in FLASH, only characters 1234567890:-.
+#define LOAD_FONT8N  // Font 8. Alternative to Font 8 above, slightly narrower, so 3 digits fit a 160 pixel TFT
+#define LOAD_GFXFF   // FreeFonts. Include access to the 48 Adafruit_GFX free fonts FF1 to FF48 and custom fonts
 
 // Comment out the #define below to stop the SPIFFS filing system and smooth font code being loaded
 // this will save ~20kbytes of FLASH
@@ -381,4 +381,4 @@
 
 // #define SUPPORT_TRANSACTIONS
 // #define TFT_DMA
-// #define USE_DMA
+// #define USE_DMA_TO_TFT

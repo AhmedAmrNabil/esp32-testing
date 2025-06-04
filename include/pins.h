@@ -18,7 +18,7 @@
 
 // GPIOs 6 to 11 are used for flash memory and should not be used.
 
-/// @brief GPIO12 - Strapping pin. Must be LOW at boot. HIGH may prevent boot on some flash chips.
+/// @brief GPIO12 - Safe GPIO as i burned the efuse on my ESP32.
 #define D12 12
 
 /// @brief GPIO13 - Safe GPIO. Often used as HSPI CLK.

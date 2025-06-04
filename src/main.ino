@@ -43,8 +43,8 @@ void loop() {
 
 //=========================================================
 void initHardware() {
-    pinMode(CLK, INPUT);
-    pinMode(DT, INPUT);
+    pinMode(CLK, INPUT_PULLUP);
+    pinMode(DT, INPUT_PULLUP);
     pinMode(SW, INPUT_PULLUP);
     encoder.attachHalfQuad(CLK, DT);
     encoder.setCount(0);
@@ -60,13 +60,15 @@ void initDisplay() {
     tft.initDMA();
 #endif
     tft.setRotation(1);
-    // tft.fillScreen(TFT_BG_CLR);
+    // tft.fillScreen(BG_CLR);
     tft.setSwapBytes(true);
-    tft.pushImage(0, 0, 240, 135, BG_IMG_ARR);  // Display initial image
+    // tft.pushImage(0, 0, 240, 135, BG_IMG_ARR);  // Display initial image
     // Initialize the sprite with TFT dimensions
+    sprite.setColorDepth(8);  // Set color depth to 16 bits
     sprite.createSprite(tft.width(), tft.height());
     sprite.setSwapBytes(true);
-    sprite.pushImage(0, 0, 240, 135, BG_IMG_ARR);  // Display initial image
+    sprite.fillSprite(BG_CLR);  // Clear the sprite with background color
+    // sprite.pushImage(0, 0, 240, 135, BG_IMG_ARR);  // Display initial image
     sprite.pushSprite(0, 0);                       // Push empty screen at start
     Serial.println("Display initialized.");
 }

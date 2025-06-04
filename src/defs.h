@@ -1,9 +1,9 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#define SW TX2
-#define CLK D4
+#define SW D4
 #define DT RX2
+#define CLK TX2
 #define BUZZER_PIN D15
 #define BUZZER_CH 0
 #define PWM_FREQ 2000     // 2kHz (matches many active buzzers)
@@ -15,5 +15,6 @@
 #define HOLD_THRESHOLD 300  // ms
 #define BUZZER_DURATION 50  // ms
 #define BG_IMG_ARR fish_bg
+#define BG_CLR TFT_ORANGE
 
 #endif  // DEFS_H
