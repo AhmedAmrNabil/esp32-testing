@@ -1,20 +1,10 @@
 #ifndef DEFS_H
 #define DEFS_H
 
+#define BG_CLR TFT_BLACK
+#define DT TX2
+#define CLK RX2
 #define SW D4
-#define DT RX2
-#define CLK TX2
-#define BUZZER_PIN D15
-#define BUZZER_CH 0
-#define PWM_FREQ 2000     // 2kHz (matches many active buzzers)
-#define PWM_RESOLUTION 8  // 8-bit resolution (0–255)
-#define TFT_BG_CLR 0xfb00
-#define TITLE_CLR TFT_BLACK
-#define MAIN_CLR TFT_BLACK
-#define SUCESS_CLR TFT_WHITE
-#define HOLD_THRESHOLD 300  // ms
-#define BUZZER_DURATION 50  // ms
-#define BG_IMG_ARR fish_bg
-#define BG_CLR TFT_ORANGE
+
 
 #endif  // DEFS_H

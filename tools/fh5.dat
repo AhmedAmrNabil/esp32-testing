@@ -1,3 +1,5 @@
+
+
 s32 IsRaceOn; // = 1 when race is on. = 0 when in menus/race stopped …
 u32 TimestampMS; //Can overflow to 0 eventually
 f32 EngineMaxRpm;
