@@ -119,7 +119,7 @@ void loop() {
         }
         portEXIT_CRITICAL(&teldataMux);
         if (currentMillis - lastPrint > 500) {  // Print every second
-            Serial.printf("Redline RPM: %.2f, Gear: %d, RPM: %.2f, Speed: %.2f\n", teldata.EngineMaxRpm * redlineThreshold, teldata.Gear, teldata.CurrentEngineRpm, teldata.Speed * 3.6);
+            Serial.printf("Redline RPM: %.2f, Gear: %d, RPM: %.2f, MaxRpm: %.2f, Speed: %.2f\n", ceil(teldata.EngineMaxRpm / 1000.0) * 1000 * redlineThreshold, teldata.Gear, teldata.CurrentEngineRpm, teldata.EngineMaxRpm, teldata.Speed * 3.6);
             lastPrint = currentMillis;
         }
     }
@@ -180,7 +180,8 @@ void drawGearColored(TelemetryData teldata) {
     sprite.setTextSize(1);
     sprite.setFreeFont(&FreeMonoBold24pt7b);
     sprite.setTextDatum(MC_DATUM);
-    if (teldata.CurrentEngineRpm >= teldata.EngineMaxRpm * redlineThreshold) {
+    int ceildRpm = ceil(teldata.EngineMaxRpm / 1000.0) * 1000;
+    if (teldata.CurrentEngineRpm >= ceildRpm * redlineThreshold) {
         sprite.setTextColor(TFT_RED, BG_CLR);
         sprite.fillSmoothCircle(120, 160, 37, TFT_RED);  // Draw a red circle around the gear
     } else {
@@ -219,22 +220,25 @@ void drawRpmBar(TelemetryData teldata, int x = 1, int y = 1, int width = 0, int 
 
 void drawRpmArc(TelemetryData teldata) {
     // Draw the RPM arc at the bottom of the display
-    int redThreshouldAngle = map(teldata.EngineMaxRpm * redlineThreshold, 0, teldata.EngineMaxRpm, 50, 310);
+    // int redThreshouldAngle = map(teldata.EngineMaxRpm * redlineThreshold, 0, teldata.EngineMaxRpm, 50, 310);
+    int redThreshouldAngle = 50 + redlineThreshold * (310 - 50) - 1;  // Map redline threshold to angle
+
     int bgRadius = 100;                                                                                                // Background arc radius
     sprite.drawArc(centerX, centerY, bgRadius, bgRadius, redThreshouldAngle, 310, TFT_RED, TFT_RED, true);             // Draw background arc
     sprite.drawArc(centerX, centerY, bgRadius, bgRadius - 1, redThreshouldAngle, 310, TFT_RED, TFT_RED, true);         // Draw background arc
     sprite.drawArc(centerX, centerY, bgRadius, bgRadius, 50, redThreshouldAngle, TFT_WHITE, TFT_WHITE, true);          // Draw background arc
     sprite.drawArc(centerX, centerY, bgRadius - 1, bgRadius - 1, 50, redThreshouldAngle, TFT_WHITE, TFT_WHITE, true);  // Draw background arc
     // draw ticks in the arc
-    redThreshouldAngle = map(teldata.EngineMaxRpm * redlineThreshold, 0, teldata.EngineMaxRpm, 220, -40);  // Map redline threshold to angle
-    int ticks = ceil(teldata.EngineMaxRpm / 1000.0);                                                               // Number of ticks based on max RPM
+    // redThreshouldAngle = map(teldata.EngineMaxRpm * redlineThreshold, 0, teldata.EngineMaxRpm, 220, -40);  // Map redline threshold to angle
+    redThreshouldAngle = 220 + redlineThreshold * (-40 - 220);  // Map redline threshold to angle
+    int ticks = ceil(teldata.EngineMaxRpm / 1000.0);            // Number of ticks based on max RPM
     sprite.setTextSize(1);
     sprite.setFreeFont(&FreeMonoBold9pt7b);
     sprite.setTextDatum(MC_DATUM);
     char rpmString[4];
     for (int i = 0; i <= ticks; i++) {
-        int drawColor = TFT_WHITE;               // Default color for ticks
-        int angle = map(i, 0, ticks, 220, -40);  // Map ticks to angles
+        int drawColor = TFT_WHITE;                           // Default color for ticks
+        int angle = 220 + (float(i) / ticks) * (-40 - 220);  // Map ticks to angles
         float cosAngle = cos((angle)*DEG_TO_RAD);
         float sinAngle = sin((angle)*DEG_TO_RAD);
         int x1 = centerX + cosAngle * (bgRadius);
@@ -254,11 +258,12 @@ void drawRpmArc(TelemetryData teldata) {
     }
 
     // draw needle
-    float angle = map(teldata.CurrentEngineRpm, 0, teldata.EngineMaxRpm, 220, -40);  // Map current RPM to angle
-    int needleCenterX = centerX + cos(angle * DEG_TO_RAD) * (50);                    // Needle position X
-    int needleCenterY = centerY - sin(angle * DEG_TO_RAD) * (50);                    // Needle position Y
-    int needleTipX = centerX + cos(angle * DEG_TO_RAD) * (bgRadius - 2);             // Needle tip X
-    int needleTipY = centerY - sin(angle * DEG_TO_RAD) * (bgRadius - 2);             // Needle tip Y
+    // float angle = map(teldata.CurrentEngineRpm, 0, teldata.EngineMaxRpm, 220, -40);  // Map current RPM to angle
+    float angle = 220 + (teldata.CurrentEngineRpm / (ticks * 1000)) * (-40 - 220);  // Map current RPM to angle
+    int needleCenterX = centerX + cos(angle * DEG_TO_RAD) * (50);                   // Needle position X
+    int needleCenterY = centerY - sin(angle * DEG_TO_RAD) * (50);                   // Needle position Y
+    int needleTipX = centerX + cos(angle * DEG_TO_RAD) * (bgRadius - 2);            // Needle tip X
+    int needleTipY = centerY - sin(angle * DEG_TO_RAD) * (bgRadius - 2);            // Needle tip Y
     drawThickLineFast(needleCenterX, needleCenterY, needleTipX, needleTipY, 6, 3, TFT_WHITE);
 }
 
@@ -269,5 +274,5 @@ void drawSpeed(TelemetryData teldata) {
     sprite.setTextDatum(BC_DATUM);
     sprite.setFreeFont(&FreeMonoBoldOblique24pt7b);
     snprintf(speedString, sizeof(speedString), "%03d", int(teldata.Speed * 3.6));  // Convert speed to km/h
-    sprite.drawString(speedString, centerX, centerY + 90);
+    sprite.drawString(speedString, centerX, centerY + 100);
 }
