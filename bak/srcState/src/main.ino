@@ -1,13 +1,12 @@
 #include <TFT_eSPI.h>
 #include <ESP32Encoder.h>
+#include <defs.h>
 #include <ezBuzzer.h>
-#include <pins.h>
 
 #include "image.h"
 #include "StateMachine.h"
 #include "MenuState.h"
 #include "CountDownConfigState.h"
-#include "defs.h"
 
 TFT_eSPI tft = TFT_eSPI();
 TFT_eSprite sprite = TFT_eSprite(&tft);
@@ -21,8 +20,8 @@ bool buttonPressed = false;
 unsigned long pressStartTime = 0;
 bool holdEventFired = false;
 extern int melody[];
-
 extern int noteDurations[];
+int lastEncoderCount = 0;
 
 //=========================================================
 void setup() {
@@ -46,9 +45,9 @@ void initHardware() {
     pinMode(CLK, INPUT_PULLUP);
     pinMode(DT, INPUT_PULLUP);
     pinMode(SW, INPUT_PULLUP);
-    encoder.attachHalfQuad(DT, CLK);
+    encoder.attachHalfQuad(CLK, DT);
     encoder.setCount(0);
-    ledcSetup(BUZZER_CH, PWM_FREQ, PWM_RESOLUTION);
+    ledcSetup(BUZZER_CH, BUZZER_PWM_FREQ, BUZZER_RESOLUTION);
     ledcAttachPin(BUZZER_PIN, BUZZER_CH);
     buzzer.playMelody(melody, noteDurations, 3);  // Start melody
     Serial.begin(115200);
@@ -78,11 +77,13 @@ void initStateMachine() {
 }
 
 void handleEncoderTurn() {
-    int delta = encoder.getCount();
-    if (delta != 0) {
-        buzzer.beep(50);                                  // Provide feedback for button click
-        encoder.setCount(0);                              // Reset count after handling
-        stateMachine->onEncoderTurn(delta / abs(delta));  // Pass absolute value of delta
+    int currentCount = encoder.getCount();
+    int delta = currentCount - lastEncoderCount;  // Calculate the change in encoder count
+    int detents = delta / 2;
+    if (detents != 0) {
+        buzzer.beep(50);                       // Provide feedback for button click
+        lastEncoderCount += 2 * detents;       // Update last count to reflect the detents
+        stateMachine->onEncoderTurn(detents);  // Pass absolute value of delta
     }
 }
 
